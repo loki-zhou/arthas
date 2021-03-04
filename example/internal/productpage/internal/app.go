@@ -7,6 +7,7 @@ import (
 	"github.com/loki-zhou/arthas/http"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+
 )
 
 type Options struct {
@@ -25,7 +26,7 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	return o, err
 }
 
-func NewApp(o *Options, logger *zap.Logger, hs *http.Server) (*app.Application, error) {
+func NewApp(o *Options, logger *zap.Logger, hs *http.Server, ) (*app.Application, error) {
 	a, err := app.New(o.Name, logger, app.HttpServerOption(hs))
 
 	if err != nil {

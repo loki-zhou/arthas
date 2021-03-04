@@ -49,8 +49,9 @@ func NewOptions(v *viper.Viper) (*Options, error) {
 	return o, err
 }
 
+type InitControllers func(r *gin.Engine)
 
-func NewRouter(o *Options, logger *zap.Logger, tracer opentracing.Tracer) *gin.Engine {
+func NewRouter(o *Options, logger *zap.Logger, init InitControllers, tracer opentracing.Tracer) *gin.Engine {
 
 	// 配置gin
 	gin.SetMode(o.Mode)
@@ -65,6 +66,7 @@ func NewRouter(o *Options, logger *zap.Logger, tracer opentracing.Tracer) *gin.E
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	pprof.Register(r)
 
+	init(r)
 
 	return r
 }

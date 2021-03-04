@@ -3,7 +3,7 @@ package domain
 import "context"
 
 type Detail struct {
-	ID        int32  `json:"id"`
+	Id        int32  `json:"id"`
 	Publisher string `json:"publisher"`
 	Language  string `json:"language"`
 	Author    string `json:"author"`
@@ -15,9 +15,9 @@ type Detail struct {
 }
 
 type DetailRepository interface {
-	GetByID(ctx context.Context, id string) (*Detail, error)
+	GetByID(ctx context.Context, id int32) (*Detail, error)
 }
 
 type DetailUsecase interface {
-	GetByID(ctx context.Context, id string) (*Detail, error)
+	GetByID(ctx context.Context, id int32) (*Detail, error)
 }
