@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package detail;
+option go_package = "./;detail";
+
+
+service DetailService {
+  rpc GetDetail (GetDetailRequest) returns (GetDetailResponse) {}
+}
+
+message GetDetailResponse {
+  int32 id    = 1;
+  string publisher =2 ;
+  string language = 3;
+  string author = 4 ;
+  string iSBN10 = 5;
+  string iSBN13 = 6;
+  int32 year = 7;
+  string type = 8;
+  int32 pages = 9;
+}
+
+message GetDetailRequest {
+  int32 id = 1;
+}

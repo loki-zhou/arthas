@@ -1,0 +1,29 @@
+[app]
+    name = "productspage"
+
+[http]
+    mode = "release"
+    port = 8080
+
+[log]
+    filename = "productspage.log"
+    maxSize = 500
+    maxBackups = 3
+    maxAge = 3
+    level = "debug" #"debug"
+    stdout =  true  #false
+
+[consul]
+    addr = "127.0.0.1:8500"
+
+[grpc]
+    port = 0
+
+[jaeger]
+    serviceName="productspage"
+    [jaeger.reporter]
+        localAgentHostPort = "127.0.0.1:6831"
+    [jaeger.sampler]
+    type = "const"
+        param = 1
+
