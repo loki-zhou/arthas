@@ -2,26 +2,37 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/wire"
 	"github.com/loki-zhou/arthas/example/internal/productpage/internal/domain"
 	"go.uber.org/zap"
 	"net/http"
 	"strconv"
 )
 
-type DetailHander struct {
+type DetailHandler struct {
 	DetailUsecase domain.DetailUsecase
 	logger     *zap.Logger
 }
 
-func NewDetailHandler(e *gin.Engine, logger *zap.Logger,detailUsecase domain.DetailUsecase) {
-	handler := &DetailHander{
+func NewDetailHandler(logger *zap.Logger,detailUsecase domain.DetailUsecase) *DetailHandler{
+	handler := &DetailHandler{
 		DetailUsecase: detailUsecase,
 		logger: logger,
 	}
-	e.GET("/api/v1/products/:product_id", handler.GetProductDetail)
+	return handler
 }
 
-func (d *DetailHander)GetProductDetail(c *gin.Context) {
+type DetailHTTPDeliveryFn func(e *gin.Engine)
+
+func NewDetailHTTPDeliveryFn(handler *DetailHandler) DetailHTTPDeliveryFn {
+	return func(e *gin.Engine) {
+		e.GET("/api/v1/products/:product_id", handler.GetProductDetail)
+	}
+}
+
+var ProviderSet = wire.NewSet(NewDetailHandler, NewDetailHTTPDeliveryFn )
+
+func (d *DetailHandler)GetProductDetail(c *gin.Context) {
 	product_id, err := strconv.ParseInt(c.Param("product_id"), 10, 32)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusBadRequest, err)

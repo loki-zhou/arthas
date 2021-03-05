@@ -11,6 +11,10 @@ import (
 	"github.com/loki-zhou/arthas/config"
 	"github.com/loki-zhou/arthas/discovery/consul"
 	"github.com/loki-zhou/arthas/example/internal/productpage/internal"
+	http2 "github.com/loki-zhou/arthas/example/internal/productpage/internal/page/delivery/http"
+	grpc2 "github.com/loki-zhou/arthas/example/internal/productpage/internal/page/repository/grpc"
+	"github.com/loki-zhou/arthas/example/internal/productpage/internal/page/usecase"
+	"github.com/loki-zhou/arthas/grpc"
 	"github.com/loki-zhou/arthas/http"
 	"github.com/loki-zhou/arthas/log"
 	"github.com/loki-zhou/arthas/trace/jaeger"
@@ -60,7 +64,22 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	application, err := internal.NewApp(internalOptions, logger, server)
+	clientOptions, err := grpc.NewClientOptions(viper, tracer)
+	if err != nil {
+		return nil, err
+	}
+	grpcClient, err := grpc.NewClient(consulOptions, clientOptions)
+	if err != nil {
+		return nil, err
+	}
+	detailRepository, err := grpc2.NewgrpcDetailRepository(grpcClient, logger)
+	if err != nil {
+		return nil, err
+	}
+	detailUsecase := usecase.NewDetailUsecase(detailRepository, logger)
+	detailHandler := http2.NewDetailHandler(logger, detailUsecase)
+	detailHTTPDeliveryFn := http2.NewDetailHTTPDeliveryFn(detailHandler)
+	application, err := internal.NewApp(internalOptions, logger, server, detailHTTPDeliveryFn)
 	if err != nil {
 		return nil, err
 	}
@@ -69,4 +88,4 @@ func CreateApp(cf string) (*app.Application, error) {
 
 // wire.go:
 
-var providerSet = wire.NewSet(config.ProviderSet, log.ProviderSet, http.ProviderSet, jaeger.ProviderSet, consul.ProviderSet, internal.ProviderSet)
+var providerSet = wire.NewSet(config.ProviderSet, log.ProviderSet, grpc.ProviderSet, http.ProviderSet, jaeger.ProviderSet, consul.ProviderSet, internal.ProviderSet)

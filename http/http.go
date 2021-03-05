@@ -49,9 +49,9 @@ func NewOptions(v *viper.Viper) (*Options, error) {
 	return o, err
 }
 
-type InitControllers func(r *gin.Engine)
 
-func NewRouter(o *Options, logger *zap.Logger, init InitControllers, tracer opentracing.Tracer) *gin.Engine {
+
+func NewRouter(o *Options, logger *zap.Logger,  tracer opentracing.Tracer) *gin.Engine {
 
 	// 配置gin
 	gin.SetMode(o.Mode)
@@ -65,8 +65,6 @@ func NewRouter(o *Options, logger *zap.Logger, init InitControllers, tracer open
 
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	pprof.Register(r)
-
-	init(r)
 
 	return r
 }
@@ -94,6 +92,12 @@ func NewWithoutDiscover(o *Options, logger *zap.Logger, router *gin.Engine) (*Se
 
 func (s *Server) Application(name string) {
 	s.app = name
+}
+
+type InitControllers func(r *gin.Engine)
+
+func (s *Server) AddRoute(init InitControllers) {
+	init(s.router)
 }
 
 func (s *Server) Start() error {
