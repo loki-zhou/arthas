@@ -9,9 +9,9 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	consulApi "github.com/hashicorp/consul/api"
+	"github.com/loki-zhou/arthas/utils/network"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
-	"github.com/loki-zhou/arthas/utils/network"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -48,7 +48,11 @@ type Server struct {
 
 type InitServers func(s *grpc.Server)
 
-func NewServer(o *ServerOptions, logger *zap.Logger, init InitServers, consulCli *consulApi.Client, tracer opentracing.Tracer) (*Server, error) {
+func (s *Server) AddServers(init InitServers) {
+	init(s.server)
+}
+
+func NewServer(o *ServerOptions, logger *zap.Logger, consulCli *consulApi.Client, tracer opentracing.Tracer) (*Server, error) {
 	// initialize grpc server
 	var gs *grpc.Server
 	logger = logger.With(zap.String("type", "grpc"))
@@ -70,7 +74,6 @@ func NewServer(o *ServerOptions, logger *zap.Logger, init InitServers, consulCli
 				otgrpc.OpenTracingServerInterceptor(tracer),
 			)),
 		)
-		init(gs)
 	}
 
 	return &Server{
